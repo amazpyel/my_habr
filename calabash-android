@@ -1,0 +1,167 @@
+<img src="http://habrastorage.org/getpro/habr/post_images/05d/07a/679/05d07a6790bfe88cb0d6a69f33a1a663.png"/>
+<a href="http://docs.xamarin.com/guides/testcloud/calabash/intro_to_calabash/">Источник изображения</a>
+В данной статье я хочу ознакомить вас с еще одним фреймворком для автоматизации тестирования мобильных приложений, а именно с Calabash – кроссплатформенным решением для приемочного тестирования Android и iOS приложений. Статья рассчитана на новичков.
+<habracut text="Подробности"/> 
+<h4>Calabash</h4>
+Calabash – это фреймворк для автоматизации функционального приемочного тестирование, тесты написанные на Calabash (<a href="http://cukes.info/">Cucumber</a>-подобные сценарии) позволяют тестировать как Android, так и iOS приложения. Calabash разрабатывается кампанией Xamarin. 
+
+Для использования Calabash необходимы следующие компоненты:
+<ul>
+	<li> Android SDK: http://developer.android.com/sdk/index.html</li>
+        <li>Apache Ant (версия 1.9): http://ant.apache.org/</li>
+        <li>Ruby версии 1.9.3 (<b>не 2.0.0 или выше</b>) http://rubyinstaller.org/</li>
+        <li>Ruby DevKit https://github.com/oneclick/rubyinstaller/wiki/Development-Kit</li>
+        <li>Calabash из Ruby gems</li>
+        <li>Тестируемое приложение, например Clean Master (Free) http://www.androiddrawer.com/ </li>
+</ul>
+Calabash постоянно развивается, поэтому самую свежую версию документации можно найти на сайте: https://github.com/calabash/calabash-android .
+
+Преимущества Calabash для тестирования приложений:
+<ul>
+<li>Простота написания тестов</li>
+<li>Возможность написания кроссплатформенных тестов (для Android и iOS)</li>
+<li>Написания сценариев в стиле Cucumber</li>
+<li>Отличный Ruby API</li>
+<li>Возможность запускать тесты в облаке</li>
+<li>Возможность запускать тесты на эмуляторе</li>
+</ul>
+Недостатки:
+<ul>
+<li>Порой, трудно идентифицировать объекты</li>
+<li>Не всегда хватает предписанных шагов для написания тестового сценария</li>
+<li>Необходим apk-файл тестируемого приложения</li>
+<li>Достаточно долгое прохождение тестов</li>
+</ul>
+<h4>Разработка тестового сценария:</h4>
+Для ознакомления с принципом работы с помощью Calabash не будем создавать сложные сценарии. В данном примере реализуем проверку голландской локализации меню приложения. Определим действия, которые будут реализованы в тесте:
+<ol>
+<li>Проверка наличия всех необходимых опций в меню приложения</li>
+<li> Изменения языка приложения на голландский</li>
+<li>Проверка корректности перевода опций меню</li>
+</ol>
+<h4>Анализ приложения</h4>
+Для анализа пользовательского интерфейса приложения будем использовать консольную интерективную среду Calabash. Ruby API ( https://github.com/calabash/calabash-android/blob/master/documentation/ruby_api.md ) позволяет нам получить объекты и их свойства, которые присутствуют на экране. Наиболее нужнымы командами интерактивной среды calabash являются: <b>query</b> для поиска необходимых объектов и их свойств, <b>tap</b> – команда нажатия на объект, а также команда <b>performAction </b>– исполнение определенных действий (нажатие на кнопку «назад», «меню», проскроллить и тому подобное). Анализ UI приложения значительно упростит процесс написания тестового сценария. Убедитесь, что расположение Ant, Java SDK, Android SDK добавлены в системные переменные. 
+
+Для удобства я использую интерактивную командную строку с Ruby:
+<img src="http://habrastorage.org/getpro/habr/post_images/2f1/aab/ddb/2f1aabddbd1994e20516702f0adc656f.png"/>
+
+Для начала работы необходимо:
+<ol>
+	<li>Создать директорию, где будет храниться наш проект: 
+<source lang="shell">> mkdir calabash_habr && cd calabash_habr</source>
+ </li>
+ <li>
+Сгенерировать файловую структуру Cucumber, которая включает в себя директории с описанием фич(features),  описанием шагов(step definitions), support:
+<source lang="shell">> calabash-android gen</source>
+<img src="http://habrastorage.org/getpro/habr/post_images/ac1/95f/410/ac195f4100bddea9643f1eb4ecfb5dc3.png"/>
+</li>
+<li>
+Поместим apk в корень директории с проектом
+</li> 
+<li>
+После этого необходимо переподписать приложение:
+<source lang="shell">> calabash-android resign "Clean Master_3.8.1.apk"</source>  
+</li>
+<li>
+Подключите устройство
+</li>
+<li>
+Установим тестируемое приложение на устройство:
+<source lang="shell">> adb install "Clean Master_3.8.1.apk"</source>
+</li>
+</ol>
+Теперь можем приступить к анализу интерфейса приложения:
+<ol>
+<li> Запуск интерактивной консольной среды calabash-console
+<source lang="shell">> calabash-android console "Clean Master_3.8.1.apk"</source>
+</li>
+<li>Запускаем тестовый сервер:
+<source lang="ruby">irb(main):001:0> start_test_server_in_background</source>
+</li>
+<li>
+Жмем на кнопку «Меню»:
+<source lang="ruby">irb(main):007:0> performAction('press_menu')</source>
+И получаем:
+<source lang="ruby">{
+    "bonusInformation" => [],
+             "message" => "",
+             "success" => true
+}
+</source>
+Меню открылось.
+</li>
+<li>
+Нам нужно зайти в "Settings", для этого сперва выясняем какой объект имеет текст "Settings":
+<source lang="ruby">irb(main):008:0> query("* text:'Settings'")</source>
+В результате узнаем, что объект с текстом «Settings» имеет id “menuSettings”:
+<source lang="ruby">[
+    [0] {
+                        "id" => "menuSettings",
+                   "enabled" => true,
+        "contentDescription" => nil,
+                     "class" => "android.widget.Button",
+                      "text" => "Settings",
+                      "rect" => {
+            "center_y" => 67.0,
+            "center_x" => 720.0,
+              "height" => 40,
+                   "y" => 47,
+               "width" => 160,
+                   "x" => 640
+        },
+               "description" => "android.widget.Button@4280e6f8"
+    }
+]
+</source> 
+</li>
+<li>
+Жмем на кнопку с id “menuSettings”:
+<source lang="ruby">irb(main):011:0> tap('menuSettings')</source>
+<spoiler title="После этого открылись настройки приложения"><img src="http://habrastorage.org/getpro/habr/post_images/22a/615/02b/22a61502b28de52d6c9738bc789fb016.png"/></spoiler>
+</li>
+<li>Этого  достаточно, выходим из интерактивной консоли:
+<source lang="ruby">irb(main):003:0> exit</source>
+</li>
+</ol>
+Теперь приступим к написанию теста. Calabash имеет достаточное количество созданных шагов, которые практично использовать при описания фичи. С действиями, которые присутствуют по умолчанию ознакомьтесь на сайте: https://github.com/calabash/calabash-android/blob/master/ruby-gem/lib/calabash-android/canned_steps.md ,  а если же не хватает действий по умолчанию, то присутствует описание красивого Ruby API доступное по сайту: https://github.com/calabash/calabash-android/blob/master/documentation/ruby_api.md .
+
+Открываем файл my_first.feature, который находится в директории features и пишем наш тестовый сценарий.  В данном примере воспользуемся шагами, которые предлагает Calabash. 
+
+<spoiler title="Получаем следующий незамысловатый сценарий"><source lang="cucumber">Feature: Menu localization
+
+Scenario: As a user I can open a menu and verify options
+	When I press the menu key
+	Then I see "Settings"
+	Then I see "Update"
+	Then I see "Like us"
+	Then I see "Rate us"
+	Then I see "Feedback"
+	Then I see "FAQ"
+	Then I see "Fast Clean"
+	Then I see "About"
+
+Scenario: As a user I can change language app to Nedelrands
+	When I press the menu key
+	When I press "Settings"
+	Then I press "Language"
+	When I press "Nederlands"
+	Then I see "Taal"
+	When I go back
+	When I press the menu key
+	Then I see "Instellingen"
+	Then I see "Moderniseren"
+	Then I see "Net als wij"
+	Then I see "Beoordeel ons"
+	Then I see "Terugcontact"
+	Then I see "FAQ"
+	Then I see "Snel schoonmaken"
+	Then I see "Over ons"</source></spoiler>
+
+Как видите, все достаточно просто.  Запускаем тест:
+<source lang="shell">> calabash-android run "Clean Master_3.8.1.apk"</source>
+<spoiler title="В результате прохождения сценария получаем:"><img src="http://habrastorage.org/getpro/habr/post_images/fc3/760/380/fc3760380c1abde3b63de9bd0989067f.png"/></spoiler>
+Из двух сценариев один не прошел так как один из шагов не прошел проверку. В директории проекта calabash генерирует скришот с именем <i>screenshot_х.png</i>.  
+Действительно, слово "Update"  <spoiler title="не переведено на голландский"><img src="http://habrastorage.org/getpro/habr/post_images/74e/f55/8ba/74ef558bab13496526538300686117cd.png"/></spoiler>
+
+<h4>Вывод</h4>
+Использование Calabash framework очень удобен для качественного приемочного тестирования приложений. Вы можете писать тестовые сценарии, которые будут работать как для Android, так и для iOS приложений без больших усилий. Также присутствует возможность развертки тестирования в облаке компании Xamarin. Фреймворк активно развивается, прост в использовании и интеграции. Со временем я собираюсь написать небольшой пост о том, как программировать свои действия с помощью Calabash Ruby API.
