@@ -1,20 +1,44 @@
 <img src="http://habrastorage.org/getpro/habr/post_images/05d/07a/679/05d07a6790bfe88cb0d6a69f33a1a663.png"/>
 <a href="http://docs.xamarin.com/guides/testcloud/calabash/intro_to_calabash/">Источник изображения</a>
-В данной статье я хочу ознакомить вас с еще одним фреймворком для автоматизации тестирования мобильных приложений, а именно с Calabash – кроссплатформенным решением для приемочного тестирования Android и iOS приложений. Статья рассчитана на новичков.
+В данной статье я хочу ознакомить вас с еще одним фреймворком для автоматизации тестирования мобильных приложений, а именно с Calabash – кроссплатформенным решением для приемочного тестирования Android и iOS приложений. Статья рассчитана на новичков, которые тестируют или хотели бы тестировать Android приложения.
 <habracut text="Подробности"/> 
 <h4>Calabash</h4>
-Calabash – это фреймворк для автоматизации функционального приемочного тестирование, тесты написанные на Calabash (<a href="http://cukes.info/">Cucumber</a>-подобные сценарии) позволяют тестировать как Android, так и iOS приложения. Calabash разрабатывается кампанией Xamarin. 
+Calabash – это кроссплатформенный фреймворк  с открытым исходным кодом для автоматизации приемочного тестирование Android и iOS приложений. Разработкой и поддержкой занимается компания Xamarin.  Также компания Xamarin предоставляет коммерческую возможность тестирования в "облаке". 
 
-Для использования Calabash необходимы следующие компоненты:
+Calabash состоит из библиотек, которые дают возможность тесту программно взаимодействовать с нативными и гибридными приложениями. Взаимодействие заключается в виде реализованных действиях пользователя. Такими действиями могут быть:
 <ul>
-	<li> Android SDK: http://developer.android.com/sdk/index.html</li>
-        <li>Apache Ant (версия 1.9): http://ant.apache.org/</li>
-        <li>Ruby версии 1.9.3 (<b>не 2.0.0 или выше</b>) http://rubyinstaller.org/</li>
-        <li>Ruby DevKit https://github.com/oneclick/rubyinstaller/wiki/Development-Kit</li>
-        <li>Calabash из Ruby gems</li>
-        <li>Тестируемое приложение, например Clean Master (Free) http://www.androiddrawer.com/ </li>
+	<li><b>Жесты</b> 
+Касания и жесты (tap, swipe, rotate и т.п.).
+</li>
+<li> <b>Проверки</b>
+Например: Должна присутствовать кпопка "Login" на экране. 
+</li>
+<li><b> Получения снимка с экрана мобильного устройства</b></li>
 </ul>
-Calabash постоянно развивается, поэтому самую свежую версию документации можно найти на сайте: https://github.com/calabash/calabash-android .
+Calabash можно сравнить с Selenium WebDriver. Однако, следует понимать, что взаимодействие с вэб-приложением с компьютера существенно отличается от взаимодействия нативных приложений использующих сенсорный экран.
+
+Calabash поддерживает Сucumber. Cucumber позволяет нам описать поведение программы используя простой "человеческий" язык, который понятен бизнес-аналитику, менеджеру и тестировщику без знаний программирования. Взгляните на пример:
+
+<source lang="cucumber">Feature: Rating a stand
+  Scenario: Find and rate a stand from the list
+    Given I am on the foodstand list
+    Then I should see a "rating" button
+    And I should not see "Dixie Burger & Gumbo Soup"
+
+    When I touch the "rating" button
+    Then I should see "Dixie Burger & Gumbo Soup"
+
+    When I touch "Dixie Burger & Gumbo Soup"
+    Then I should see details for "Dixie Burger & Gumbo Soup"
+
+    When I touch the "rate_it" button
+    Then I should see the rating panel
+
+    When I touch "star5"
+    And I touch "rate"
+    Then "Dixie Burger & Gumbo Soup" should be rated 5 stars
+</source>
+Более подробно ознакомится с Cucumber можно, например, прочитав статью: http://habrahabr.ru/post/62958/
 
 Преимущества Calabash для тестирования приложений:
 <ul>
@@ -32,18 +56,44 @@ Calabash постоянно развивается, поэтому самую с
 <li>Необходим apk-файл тестируемого приложения</li>
 <li>Достаточно долгое прохождение тестов</li>
 </ul>
-<h4>Разработка тестового сценария:</h4>
-Для ознакомления с принципом работы с помощью Calabash не будем создавать сложные сценарии. В данном примере реализуем проверку голландской локализации меню приложения. Определим действия, которые будут реализованы в тесте:
+<h4>Установка</h4>
+Тестировать с помощью Calabash можно как на Windows, так и на Linux или MacOS, однако в данном случае я использую 64-разрядную ОС Windows 8 (Также проверял на Windows 7 64x). Для начала работы Сalabash необходимо установить некоторые компоненты: 
+<ol>
+	<li><b>JDK7 Standard Edition</b>
+Если у Вас не установлен JDK7 (или 6), то скачайте и установите его:  http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html . После того как установили JDK необходимо создать системную переменную <b>JAVA_HOME</b>, которая будет указывать расположение JDK. Также добавте в переменную окружения<b> PATH</b> путь к java (<i>если Вы не меняли путь установки JDK, то java находится тут: C:\Program Files\Java\jre7\bin</i>).
+</li>
+        <li><b>Android SDK</b>
+Скачайте и распакуйте в удобное место Android SDK (или ADT Bundle):  http://developer.android.com/sdk/index.html?hl=sk . После этого необходимо создать переменную <b>ANDROID_HOME</b> указываящая раположение Android SDK (<i>у меня: C:\adt-bundle-windows-x86_64-20131030\sdk</i>), а также добавьте в<b> PATH </b>расположение adb (<i>например, C:\adt-bundle-windows-x86_64-20131030\sdk\platform-tools</i>)
+</li>
+        <li><b>Ant</b>
+Скачайте и распакуйте Ant (http://ant.apache.org/bindownload.cgi), а затем создайте переменную <b>ANT_HOME</b>, в которой прописывайте путь к Ant и, как прежде, добавляйте разположение ant.exe в переменную окружения <b>PATH</b>, а именно %ANT_HOME%\bin
+</li>
+        <li><b>Ruby 1.9.3. (не 2.0 !!!)</b>
+Скачайте установочный файл с сайта http://rubyinstaller.org/downloads/ и устанавливайте, во время установки поставте галочку напротив опции "Add ruby executables to your PATH"<img src="http://habrastorage.org/getpro/habr/post_images/06a/fae/78f/06afae78fed0874c4af51988377641a1.png"/>
+
+</li>
+        <li><b>Ruby Development Kit</b>
+Также необходим Ruby Development Kit для доступа к Ruby gems (пакетный менеджер). Скачать установочный файл нужно на сайте:  http://rubyinstaller.org/downloads/ . Установите, следую инструкции на экране.
+</li>
+</ol>
+После этого проверьте, что Вы правильно добавили переменные:
+<img src="http://habrastorage.org/getpro/habr/post_images/57d/118/647/57d11864779fdeed4ef1fa1c87bc0b26.png"/>
+Все в порядке, устанавливаем Calabash-android из пакетного менеджера Ruby gems (запустите командную строчку  windows):
+<code>> gem install calabash-android</code>
+Все установлено, теперь можно приступить к тестированию.
+
+<h4>Разработка тестового сценария</h4>
+Для ознакомления не будем создавать сложные сценарии: реализуем проверку голландской локализации меню приложения. Тестировать будем известное многим приложение Clean Master (Free) версии 3.8.1, apk которого доступен на сайте:  http://www.androiddrawer.com/ .
+
+Определим действия, которые будут реализованы в тесте:
 <ol>
 <li>Проверка наличия всех необходимых опций в меню приложения</li>
 <li> Изменения языка приложения на голландский</li>
 <li>Проверка корректности перевода опций меню</li>
 </ol>
-<h4>Анализ приложения</h4>
-Для анализа пользовательского интерфейса приложения будем использовать консольную интерективную среду Calabash. Ruby API ( https://github.com/calabash/calabash-android/blob/master/documentation/ruby_api.md ) позволяет нам получить объекты и их свойства, которые присутствуют на экране. Наиболее нужнымы командами интерактивной среды calabash являются: <b>query</b> для поиска необходимых объектов и их свойств, <b>tap</b> – команда нажатия на объект, а также команда <b>performAction </b>– исполнение определенных действий (нажатие на кнопку «назад», «меню», проскроллить и тому подобное). Анализ UI приложения значительно упростит процесс написания тестового сценария. Убедитесь, что расположение Ant, Java SDK, Android SDK добавлены в системные переменные. 
 
-Для удобства я использую интерактивную командную строку с Ruby:
-<img src="http://habrastorage.org/getpro/habr/post_images/2f1/aab/ddb/2f1aabddbd1994e20516702f0adc656f.png"/>
+<h4>Анализ приложения</h4>
+Для анализа пользовательского интерфейса приложения будем использовать консольную интерективную среду Calabash. Ruby API ( https://github.com/calabash/calabash-android/blob/master/documentation/ruby_api.md ) позволяет нам получить объекты и их свойства, которые присутствуют на экране. Наиболее нужнымы командами интерактивной среды calabash являются: <b>query</b> для поиска необходимых объектов и их свойств, <b>tap</b> – команда нажатия на объект, а также команда <b>performAction </b>– исполнение определенных действий (нажатие на кнопку «назад», «меню», проскроллить и тому подобное). Анализ UI приложения значительно упростит процесс написания тестового сценария.
 
 Для начала работы необходимо:
 <ol>
@@ -56,11 +106,13 @@ Calabash постоянно развивается, поэтому самую с
 <img src="http://habrastorage.org/getpro/habr/post_images/ac1/95f/410/ac195f4100bddea9643f1eb4ecfb5dc3.png"/>
 </li>
 <li>
-Поместим apk в корень директории с проектом
+Поместим apk в корень директории с проект
 </li> 
 <li>
 После этого необходимо переподписать приложение:
-<source lang="shell">> calabash-android resign "Clean Master_3.8.1.apk"</source>  
+<source lang="shell">> calabash-android resign "Clean Master_3.8.1.apk"</source> 
+Если Вам не удалось переподписать, то сначала необходимо выполнить команду: 
+    <code>keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"</code>
 </li>
 <li>
 Подключите устройство
@@ -77,6 +129,8 @@ Calabash постоянно развивается, поэтому самую с
 </li>
 <li>Запускаем тестовый сервер:
 <source lang="ruby">irb(main):001:0> start_test_server_in_background</source>
+Если у Вас не удалось запустить тестовый сервер, то выполните команду: 
+<source lang="ruby">irb(main):001:0> reinstall_apps</source>
 </li>
 <li>
 Жмем на кнопку «Меню»:
@@ -125,12 +179,14 @@ Calabash постоянно развивается, поэтому самую с
 </ol>
 Теперь приступим к написанию теста. Calabash имеет достаточное количество созданных шагов, которые практично использовать при описания фичи. С действиями, которые присутствуют по умолчанию ознакомьтесь на сайте: https://github.com/calabash/calabash-android/blob/master/ruby-gem/lib/calabash-android/canned_steps.md ,  а если же не хватает действий по умолчанию, то присутствует описание красивого Ruby API доступное по сайту: https://github.com/calabash/calabash-android/blob/master/documentation/ruby_api.md .
 
-Открываем файл my_first.feature, который находится в директории features и пишем наш тестовый сценарий.  В данном примере воспользуемся шагами, которые предлагает Calabash. 
+Открываем файл <b>my_first.feature</b>, который находится в директории features и пишем наш тестовый сценарий.  В данном примере воспользуемся шагами, которые предлагает Calabash ( https://github.com/calabash/calabash-android/blob/master/ruby-gem/lib/calabash-android/canned_steps.md описание шагов)
 
 <spoiler title="Получаем следующий незамысловатый сценарий"><source lang="cucumber">Feature: Menu localization
-
+# Заголовок сценария
 Scenario: As a user I can open a menu and verify options
+# Нажимаем на кнопку "Меню"
 	When I press the menu key
+# Проверяем, если текст "Settings", "Update" и т.д.
 	Then I see "Settings"
 	Then I see "Update"
 	Then I see "Like us"
@@ -164,4 +220,6 @@ Scenario: As a user I can change language app to Nedelrands
 Действительно, слово "Update"  <spoiler title="не переведено на голландский"><img src="http://habrastorage.org/getpro/habr/post_images/74e/f55/8ba/74ef558bab13496526538300686117cd.png"/></spoiler>
 
 <h4>Вывод</h4>
-Использование Calabash framework очень удобен для качественного приемочного тестирования приложений. Вы можете писать тестовые сценарии, которые будут работать как для Android, так и для iOS приложений без больших усилий. Также присутствует возможность развертки тестирования в облаке компании Xamarin. Фреймворк активно развивается, прост в использовании и интеграции. Со временем я собираюсь написать небольшой пост о том, как программировать свои действия с помощью Calabash Ruby API.
+Использование Calabash framework очень удобен для качественного приемочного тестирования приложений. Вы можете писать тестовые сценарии, которые будут работать как для Android, так и для iOS приложений без больших усилий. Фреймворк активно развивается, прост в использовании и интеграции. Со временем я собираюсь написать небольшой пост о том, как программировать свои действия с помощью Calabash Ruby API. Больше информации можно найти на сайте https://github.com/calabash/calabash-android .  
+
+Для удобства Вы можете склонировать готовый проект с GitHub: https://github.com/amazpyel/calabash_habr
